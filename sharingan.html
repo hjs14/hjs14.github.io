@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>万花筒写轮眼</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .sharingan-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            cursor: pointer; /* 点击切换形态 */
+        }
+        .circle {
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* 基础写轮眼样式 */
+        .outer {
+            width: 100%;
+            height: 100%;
+            background: #d40000;
+            box-shadow: 0 0 30px rgba(212, 0, 0, 0.8);
+        }
+        .middle {
+            width: 60%;
+            height: 60%;
+            background: #000;
+        }
+        .inner {
+            width: 20%;
+            height: 20%;
+            background: #d40000;
+        }
+        /* 勾玉样式 */
+        .tomoe {
+            position: absolute;
+            width: 30px;
+            height: 80px;
+            background: #000;
+            border-radius: 50%;
+            transform-origin: center bottom;
+        }
+        .tomoe-1 { top: 10%; left: 50%; transform: translateX(-50%); }
+        .tomoe-2 { top: 70%; left: 25%; transform: rotate(120deg); }
+        .tomoe-3 { top: 70%; left: 75%; transform: rotate(-120deg); }
+        /* 万花筒形态（初始隐藏） */
+        .mangekyou {
+            display: none;
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(0deg);
+            transition: transform 0.5s ease;
+        }
+        .mangekyou-path {
+            fill: none;
+            stroke: #000;
+            stroke-width: 15;
+            stroke-linecap: round;
+        }
+    </style>
+</head>
+<body>
+    <div class="sharingan-container" id="sharingan">
+        <!-- 基础写轮眼 -->
+        <div class="circle outer"></div>
+        <div class="circle middle"></div>
+        <div class="circle inner"></div>
+        <div class="tomoe tomoe-1"></div>
+        <div class="tomoe tomoe-2"></div>
+        <div class="tomoe tomoe-3"></div>
+        
+        <!-- 万花筒形态（宇智波鼬的“万花筒写轮眼”为例） -->
+        <svg class="mangekyou" id="mangekyou">
+            <path class="mangekyou-path" d="M 0,-120 L 40,-40 L 120,0 L 40,40 L 0,120 L -40,40 L -120,0 L -40,-40 Z"></path>
+        </svg>
+    </div>
+
+    <script>
+        const container = document.getElementById('sharingan');
+        const mangekyou = document.getElementById('mangekyou');
+        let isMangekyou = false;
+
+        // 点击切换形态
+        container.addEventListener('click', () => {
+            isMangekyou = !isMangekyou;
+            const tomoes = document.querySelectorAll('.tomoe');
+            const middle = document.querySelector('.middle');
+            
+            if (isMangekyou) {
+                // 切换到万花筒
+                tomoes.forEach(t => t.style.display = 'none');
+                middle.style.display = 'none';
+                mangekyou.style.display = 'block';
+            } else {
+                // 切换回普通写轮眼
+                tomoes.forEach(t => t.style.display = 'block');
+                middle.style.display = 'block';
+                mangekyou.style.display = 'none';
+            }
+        });
+
+        // 鼠标移动时旋转万花筒
+        container.addEventListener('mousemove', (e) => {
+            if (isMangekyou) {
+                const rect = container.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // 根据鼠标位置计算旋转角度
+                const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                mangekyou.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+            }
+        });
+    </script>
+</body>
+</html>
