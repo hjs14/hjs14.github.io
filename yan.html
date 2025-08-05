@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>微信万花筒写轮眼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #e94560;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(233, 69, 96, 0.7);
+            letter-spacing: 2px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 20px rgba(233, 69, 96, 0.5),
+                0 0 40px rgba(233, 69, 96, 0.3),
+                inset 0 0 30px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: rgba(233, 69, 96, 0.3);
+            color: #fff;
+            border: 2px solid #e94560;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            letter-spacing: 1px;
+            outline: none;
+        }
+        
+        button:active {
+            background: rgba(233, 69, 96, 0.7);
+            transform: scale(0.95);
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #a9a9a9;
+            line-height: 1.6;
+            max-width: 90%;
+        }
+        
+        .effect-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .kaleidoscope {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>万花筒写轮眼</h1>
+        
+        <div class="canvas-container">
+            <div class="effect-text">SHARINGAN</div>
+            <canvas id="sharinganCanvas"></canvas>
+            <div class="kaleidoscope" id="kaleidoscope"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">启动写轮眼</button>
+            <button id="stopBtn">停止旋转</button>
+            <button id="kaleidoscopeBtn">万花筒效果</button>
+        </div>
+        
+        <div class="instructions">
+            提示：点击屏幕可切换写轮眼状态，长按可加速旋转
+        </div>
+    </div>
+    
+    <div class="footer">
+        在微信中打开 - 火影忍者写轮眼特效
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('sharinganCanvas');
+            const ctx = canvas.getContext('2d');
+            const kaleidoscope = document.getElementById('kaleidoscope');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const kaleidoscopeBtn = document.getElementById('kaleidoscopeBtn');
+            
+            // 设置Canvas尺寸
+            canvas.width = 300;
+            canvas.height = 300;
+            
+            // 写轮眼参数
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            let rotation = 0;
+            let animationId = null;
+            let isAnimating = false;
+            let kaleidoscopeEnabled = false;
+            let rotationSpeed = 0.005;
+            
+            // 绘制写轮眼
+            function drawSharingan() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制背景
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, 10,
+                    centerX, centerY, 150
+                );
+                gradient.addColorStop(0, '#8b0000');
+                gradient.addColorStop(1, '#4d0000');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 140, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制外圈
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 130, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 绘制内圈
+                ctx.strokeStyle = '#ff4500';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 110, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 保存当前状态
+                ctx.save();
+                
+                // 移动到中心点并旋转
+                ctx.translate(centerX, centerY);
+                ctx.rotate(rotation);
+                
+                // 绘制三个勾玉
+                for (let i = 0; i < 3; i++) {
+                    ctx.save();
+                    ctx.rotate(i * Math.PI * 2 / 3);
+                    
+                    // 绘制勾玉
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    
+                    // 勾玉头部（圆形部分）
+                    ctx.arc(80, 0, 20, 0, Math.PI * 2);
+                    
+                    // 勾玉尾部（水滴部分）
+                    ctx.moveTo(80, -20);
+                    ctx.quadraticCurveTo(40, 0, 80, 20);
+                    
+                    ctx.fill();
+                    
+                    // 勾玉内圈（白色亮点）
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(70, -5, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // 绘制中心圆
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(0, 0, 35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 中心点（红色）
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 恢复状态
+                ctx.restore();
+            }
+            
+            // 动画函数
+            function animate() {
+                rotation += rotationSpeed;
+                drawSharingan();
+                
+                if (isAnimating) {
+                    animationId = requestAnimationFrame(animate);
+                }
+            }
+            
+            // 启动动画
+            function startAnimation() {
+                if (!isAnimating) {
+                    isAnimating = true;
+                    animate();
+                }
+            }
+            
+            // 停止动画
+            function stopAnimation() {
+                isAnimating = false;
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            }
+            
+            // 切换万花筒效果
+            function toggleKaleidoscope() {
+                kaleidoscopeEnabled = !kaleidoscopeEnabled;
+                
+                if (kaleidoscopeEnabled) {
+                    kaleidoscope.style.background = 'radial-gradient(circle, transparent 20%, #0f3460 70%), repeating-radial-gradient(circle at center, #e94560 0px, #e94560 4px, transparent 5px, transparent 20px)';
+                    kaleidoscope.style.backgroundBlendMode = 'overlay';
+                    kaleidoscopeBtn.textContent = '关闭万花筒';
+                } else {
+                    kaleidoscope.style.background = 'none';
+                    kaleidoscopeBtn.textContent = '万花筒效果';
+                }
+            }
+            
+            // 按钮事件监听
+            startBtn.addEventListener('click', startAnimation);
+            stopBtn.addEventListener('click', stopAnimation);
+            kaleidoscopeBtn.addEventListener('click', toggleKaleidoscope);
+            
+            // 触摸/点击事件
+            canvas.addEventListener('click', function() {
+                if (isAnimating) {
+                    stopAnimation();
+                } else {
+                    startAnimation();
+                }
+            });
+            
+            // 长按加速
+            let pressTimer;
+            
+            canvas.addEventListener('touchstart', function(e) {
+                pressTimer = setTimeout(function() {
+                    rotationSpeed *= 2;
+                }, 500);
+                e.preventDefault();
+            });
+            
+            canvas.addEventListener('touchend', function(e) {
+                clearTimeout(pressTimer);
+                rotationSpeed = 0.005;
+                e.preventDefault();
+            });
+            
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            });
+            
+            // 初始化绘制
+            drawSharingan();
+            
+            // 添加万花筒效果
+            toggleKaleidoscope();
+        });
+    </script>
+</body>
+</html>
